@@ -1,4 +1,5 @@
 const questions = [
+  // create 5 questions with 4 answer, In the answer will have the difficulty to enhance score
   {
     question: "Which is largest animal in the world ?",
     answers: [
@@ -52,6 +53,7 @@ const questions = [
 ];
 
 const playerName = prompt(
+  // insert name
   "Hello, Please insert your name before the game begins: "
 );
 
@@ -59,7 +61,7 @@ const simpleQuizTitle = document.getElementById("simple-quiz-title");
 const greeting = document.getElementById("greeting");
 
 simpleQuizTitle.textContent = "Simple Quiz";
-greeting.textContent = `Hello ${playerName}`;
+greeting.textContent = `Hello ${playerName}`; //Hello [name]
 greeting.classList.remove("hidden");
 
 const questionElement = document.getElementById("question");
@@ -89,11 +91,13 @@ function showQuestion() {
   currentQuestion.answers.forEach((answer) => {
     const button = document.createElement("button");
 
+    // Create answer buttons for each answer of the question
     button.innerHTML = answer.text;
     button.classList.add("btn");
     answerButton.appendChild(button);
 
     if (answer.correct) {
+      // Mark the correct answer using data attribute
       button.dataset.correct = answer.correct;
     }
     button.addEventListener("click", selectAnswer);
@@ -101,13 +105,16 @@ function showQuestion() {
 }
 
 function resetState() {
-  nextButton.style.display = "none";
+  nextButton.style.display = "none"; // Hide the next button
+
+  // Remove all child elements from the answer button container
   while (answerButton.firstChild) {
     answerButton.removeChild(answerButton.firstChild);
   }
 }
 
 const difficultyWeights = {
+  // Make point base on difficulty
   1: 1,
   2: 2,
   3: 3,
@@ -120,6 +127,7 @@ function selectAnswer(e) {
   const isCorrect = selectedBtn.dataset.correct === "true";
   weight = difficultyWeights[currentQuestion.difficulty];
 
+  // If the answer is correct, add the weight to the score and mark the button as correct
   if (isCorrect) {
     score += weight;
     selectedBtn.classList.add("correct");
@@ -127,6 +135,7 @@ function selectAnswer(e) {
     selectedBtn.classList.add("incorrect");
   }
 
+  // Disable all answer buttons to prevent further selection
   Array.from(answerButton.children).forEach((button) => {
     if (button.dataset.correct === "true") {
       button.classList.add("correct");
@@ -134,18 +143,20 @@ function selectAnswer(e) {
     button.disabled = true;
   });
 
+  // Display the next button to proceed to the next question
   nextButton.style.display = "block";
 }
 
 function showScore() {
   console.log("Quiz ended"); // Console log messages for end Quiz
   resetState();
-  questionElement.innerHTML = `You score ${score} out of ${calculateMaxPossibleScore()}!`;
+  questionElement.innerHTML = `You score ${score} out of ${calculateMaxPossibleScore()}!`; // show score / total score
   nextButton.innerHTML = "Play Again";
   nextButton.style.display = "block";
 }
 
 function calculateMaxPossibleScore() {
+  // calculate total score
   let maxScore = 0;
   questions.forEach((question) => {
     maxScore += difficultyWeights[question.difficulty];
@@ -154,18 +165,23 @@ function calculateMaxPossibleScore() {
 }
 
 function handleNextButton() {
-  currentQuestionIndex++;
+  currentQuestionIndex++; // Move to the next question
   if (currentQuestionIndex < questions.length) {
+    // If there are more questions remaining, show the next question
     showQuestion();
   } else {
+    // If all questions have been answered, show the final score
     showScore();
   }
 }
-
+// Add event listener for the next button click
 nextButton.addEventListener("click", () => {
+  // Check if there are more questions remaining
   if (currentQuestionIndex < questions.length) {
+    // If yes, handle the next button click
     handleNextButton();
   } else {
+    // If all questions have been answered, start the quiz again
     startQuiz();
   }
 });
