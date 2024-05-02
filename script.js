@@ -1,69 +1,5 @@
-const questions = [
-  // create 5 questions with 4 answer, In the answer will have the difficulty to enhance score
-  {
-    question: "Which is largest animal in the world ?",
-    answers: [
-      { text: "Shark", correct: false },
-      { text: "Blue Whale", correct: true },
-      { text: "Elephant", correct: false },
-      { text: "Giraffe", correct: false },
-    ],
-    difficulty: 1,
-  },
-  {
-    question: "Which is smallest country in the world ?",
-    answers: [
-      { text: "Vatican City", correct: true },
-      { text: "Bhutan", correct: false },
-      { text: "Nepal", correct: false },
-      { text: "Shri Lanka", correct: false },
-    ],
-    difficulty: 1,
-  },
-  {
-    question: "Which is largest desert in the world ?",
-    answers: [
-      { text: "Kalahari", correct: false },
-      { text: "Gobi", correct: false },
-      { text: "Sahara", correct: false },
-      { text: "Antarctica", correct: true },
-    ],
-    difficulty: 2,
-  },
-  {
-    question: "Which is smallest continent in the world ?",
-    answers: [
-      { text: "Asia", correct: false },
-      { text: "Australia", correct: true },
-      { text: "Arctic", correct: false },
-      { text: "Africa", correct: false },
-    ],
-    difficulty: 3,
-  },
-  {
-    question: "What is the capital city of Canada ?",
-    answers: [
-      { text: "Toronto", correct: false },
-      { text: "Ottawa", correct: true },
-      { text: "Vancouver", correct: false },
-      { text: "Montreal", correct: false },
-    ],
-    difficulty: 3,
-  },
-];
-
-const playerName = prompt(
-  // insert name
-  "Hello, Please insert your name before the game begins: "
-);
-
 const simpleQuizTitle = document.getElementById("simple-quiz-title");
 const greeting = document.getElementById("greeting");
-
-simpleQuizTitle.textContent = "Simple Quiz";
-greeting.textContent = `Hello ${playerName}`; //Hello [name]
-greeting.classList.remove("hidden");
-
 const questionElement = document.getElementById("question");
 const answerButton = document.getElementById("answer-buttons");
 const nextButton = document.getElementById("next-btn");
@@ -72,12 +8,31 @@ let currentQuestionIndex = 0;
 let score = 0;
 let currentQuestion;
 let weight;
+let playerName = "";
 
-function startQuiz() {
+async function startQuiz() {
+  while (!playerName) { // make loop until put name correct
+    playerName = prompt(
+      "Hello, Please insert your name before the game begins: "
+    );
+
+    if (!playerName) {
+      alert("Please insert a valid name.");
+    }
+  }
+
   console.log("Quiz started"); // Console log messages for start Quiz
+  simpleQuizTitle.textContent = "Simple Quiz";
+  greeting.textContent = `Hello ${playerName}`; //Hello [name]
+  greeting.classList.remove("hidden");
   currentQuestionIndex = 0;
   score = 0;
   nextButton.innerHTML = "Next";
+  //fetch data from JSON
+  const response = await fetch("data.json");
+  const data = await response.json();
+  questions = data;
+
   showQuestion();
 }
 
@@ -113,11 +68,10 @@ function resetState() {
   }
 }
 
-const difficultyWeights = {
-  // Make point base on difficulty
-  1: 1,
-  2: 2,
-  3: 3,
+const difficultyWeights = { //make points base on difficulty
+  easy: 1,
+  medium: 2,
+  hard: 3,
 };
 
 function selectAnswer(e) {
