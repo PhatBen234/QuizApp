@@ -48,5 +48,15 @@
       { "text": "Montreal", "correct": false }
     ],
     "difficulty": "hard"
+  },
+  {
+    "question": "What are the colors of the French flag?",
+    "answers": [
+      {"text": "Blue", "correct": true},
+      {"text": "White", "correct": true},
+      {"text": "Red", "correct": true},
+      {"text": "Green", "correct": false}
+    ],
+    "difficulty": "veryhard"
   }
 ]

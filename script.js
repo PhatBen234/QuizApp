@@ -11,7 +11,8 @@ let weight;
 let playerName = "";
 
 async function startQuiz() {
-  while (!playerName) { // make loop until put name correct
+  while (!playerName) {
+    // make loop until put name correct
     playerName = prompt(
       "Hello, Please insert your name before the game begins: "
     );
@@ -43,19 +44,29 @@ function showQuestion() {
   weight = difficultyWeights[currentQuestion.difficulty];
   questionElement.innerHTML = `Question ${questionNo} (${weight}pts) : ${currentQuestion.question}`;
 
-  currentQuestion.answers.forEach((answer) => {
-    const button = document.createElement("button");
+  currentQuestion.answers.forEach((answer, index) => {
+    // Create radio button for each answer of the question
+    const radioButton = document.createElement("input");
+    radioButton.type = "radio";
+    radioButton.name = "answer";
+    radioButton.value = answer.text; // Set value of radio button to answer text
 
-    // Create answer buttons for each answer of the question
-    button.innerHTML = answer.text;
-    button.classList.add("btn");
-    answerButton.appendChild(button);
+    // Create label for radio button
+    const label = document.createElement("label");
+    label.textContent = answer.text;
 
+    // Append radio button and label to answer buttons container
+    answerButton.appendChild(radioButton);
+    answerButton.appendChild(label);
+    answerButton.appendChild(document.createElement("br"));
+
+    // Mark the correct answer using data attribute
     if (answer.correct) {
-      // Mark the correct answer using data attribute
-      button.dataset.correct = answer.correct;
+      radioButton.dataset.correct = true;
     }
-    button.addEventListener("click", selectAnswer);
+
+    // Add event listener to radio button
+    radioButton.addEventListener("click", selectAnswer);
   });
 }
 
@@ -68,36 +79,36 @@ function resetState() {
   }
 }
 
-const difficultyWeights = { //make points base on difficulty
+const difficultyWeights = {
+  //make points base on difficulty
   easy: 1,
   medium: 2,
   hard: 3,
+  veryhard: 5,
 };
 
 function selectAnswer(e) {
-  console.log("Answer selected"); // Console log messages for selectAnswer
+  console.log("Answer selected");
 
-  const selectedBtn = e.target;
-  const isCorrect = selectedBtn.dataset.correct === "true";
+  const selectedRadio = e.target;
+  const selectedLabel = selectedRadio.nextElementSibling;
+  const isCorrect = selectedRadio.dataset.correct === "true";
   weight = difficultyWeights[currentQuestion.difficulty];
 
-  // If the answer is correct, add the weight to the score and mark the button as correct
+  // If right, get point
   if (isCorrect) {
     score += weight;
-    selectedBtn.classList.add("correct");
+    selectedLabel.classList.add("correct");
   } else {
-    selectedBtn.classList.add("incorrect");
+    selectedLabel.classList.add("incorrect");
   }
 
-  // Disable all answer buttons to prevent further selection
-  Array.from(answerButton.children).forEach((button) => {
-    if (button.dataset.correct === "true") {
-      button.classList.add("correct");
-    }
-    button.disabled = true;
+  // Disable all button in order to pick more
+  Array.from(answerButton.children).forEach((radio) => {
+    radio.disabled = true;
   });
 
-  // Display the next button to proceed to the next question
+  // Display "next"
   nextButton.style.display = "block";
 }
 
