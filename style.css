@@ -60,12 +60,12 @@ body {
   display: none;
 }
 
-.correct {
+/* .correct {
   background: #9aeabc;
 }
 .incorrect {
   background: #ff9393;
-}
+} */
 
 .header {
   font-size: 25px;

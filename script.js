@@ -45,28 +45,28 @@ function showQuestion() {
   questionElement.innerHTML = `Question ${questionNo} (${weight}pts) : ${currentQuestion.question}`;
 
   currentQuestion.answers.forEach((answer, index) => {
-    // Create radio button for each answer of the question
-    const radioButton = document.createElement("input");
-    radioButton.type = "radio";
-    radioButton.name = "answer";
-    radioButton.value = answer.text; // Set value of radio button to answer text
+    // Create checkbox for each answer of the question
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.name = "answer";
+    checkbox.value = answer.text; // Set value of checkbox to answer text
 
-    // Create label for radio button
+    // Create label for checkbox
     const label = document.createElement("label");
     label.textContent = answer.text;
 
-    // Append radio button and label to answer buttons container
-    answerButton.appendChild(radioButton);
+    // Append checkbox and label to answer buttons container
+    answerButton.appendChild(checkbox);
     answerButton.appendChild(label);
-    answerButton.appendChild(document.createElement("br"));
+    answerButton.appendChild(document.createElement("br")); // Add line break
 
     // Mark the correct answer using data attribute
     if (answer.correct) {
-      radioButton.dataset.correct = true;
+      checkbox.dataset.correct = true;
     }
 
-    // Add event listener to radio button
-    radioButton.addEventListener("click", selectAnswer);
+    // Add event listener to checkbox
+    checkbox.addEventListener("change", selectAnswer);
   });
 }
 
@@ -90,34 +90,29 @@ const difficultyWeights = {
 function selectAnswer(e) {
   console.log("Answer selected");
 
-  const selectedRadio = e.target;
-  const selectedLabel = selectedRadio.nextElementSibling;
-  const isCorrect = selectedRadio.dataset.correct === "true";
+  const selectedCheckbox = e.target;
+  const selectedLabel = selectedCheckbox.nextElementSibling; 
+  const isCorrect = selectedCheckbox.dataset.correct === "true";
   weight = difficultyWeights[currentQuestion.difficulty];
 
-  // If right, get point
-  if (isCorrect) {
-    score += weight;
-    selectedLabel.classList.add("correct");
+  
+  if (selectedCheckbox.checked) {
+    
+    if (isCorrect) {
+      selectedLabel.classList.add("correct");
+    } else {
+      selectedLabel.classList.add("incorrect");
+    }
   } else {
-    selectedLabel.classList.add("incorrect");
+    
+    selectedLabel.classList.remove("correct", "incorrect");
   }
 
-  // Disable all button in order to pick more
-  Array.from(answerButton.children).forEach((radio) => {
-    radio.disabled = true;
-  });
-
-  // Display "next"
-  nextButton.style.display = "block";
-}
-
-function showScore() {
-  console.log("Quiz ended"); // Console log messages for end Quiz
-  resetState();
-  questionElement.innerHTML = `You score ${score} out of ${calculateMaxPossibleScore()}!`; // show score / total score
-  nextButton.innerHTML = "Play Again";
-  nextButton.style.display = "block";
+  
+  const checkedCheckboxes = Array.from(
+    answerButton.querySelectorAll("input[type='checkbox']:checked")
+  );
+  nextButton.style.display = checkedCheckboxes.length > 0 ? "block" : "none";
 }
 
 function calculateMaxPossibleScore() {
@@ -130,15 +125,46 @@ function calculateMaxPossibleScore() {
 }
 
 function handleNextButton() {
-  currentQuestionIndex++; // Move to the next question
+  // Initialize a counter for correct answers
+  let correctAnswersCount = 0;
+
+  // Check if all checked answers are correct
+  const checkedCheckboxes = Array.from(
+    answerButton.querySelectorAll("input[type='checkbox']:checked")
+  );
+
+  // Check if all checked answers are correct and there are no unchecked checkboxes
+  const allCorrect = checkedCheckboxes.every((checkbox) => {
+    if (checkbox.dataset.correct === "true") {
+      correctAnswersCount++;
+      return true;
+    } else {
+      return false;
+    }
+  });
+
+  if (
+    allCorrect &&
+    correctAnswersCount ===
+      currentQuestion.answers.filter((answer) => answer.correct).length
+  ) {
+    // Add weight to score
+    score += weight;
+  }
+  console.log(score);
+
+  // Move to the next question
+  currentQuestionIndex++;
+
+  // If there are more questions remaining, show the next question
   if (currentQuestionIndex < questions.length) {
-    // If there are more questions remaining, show the next question
     showQuestion();
   } else {
     // If all questions have been answered, show the final score
     showScore();
   }
 }
+
 // Add event listener for the next button click
 nextButton.addEventListener("click", () => {
   // Check if there are more questions remaining
@@ -150,5 +176,50 @@ nextButton.addEventListener("click", () => {
     startQuiz();
   }
 });
+
+function showCorrectAnswersFromFile(file) {
+  fetch(file)
+    .then((response) => response.json())
+    .then((data) => {
+      
+      const reviewDiv = document.createElement("div");
+      reviewDiv.classList.add("review-container");
+
+      
+      const correctAnswersTitle = document.createElement("h2");
+      correctAnswersTitle.textContent = "Correct Answers:";
+      reviewDiv.appendChild(correctAnswersTitle);
+
+      
+      data.forEach((answerObject) => {
+        for (const key in answerObject) {
+          if (Object.hasOwnProperty.call(answerObject, key)) {
+            const answerElement = document.createElement("p");
+            answerElement.textContent = `${key}: ${answerObject[key]}`;
+            answerElement.classList.add("correct-answer");
+            reviewDiv.appendChild(answerElement);
+          }
+        }
+      });
+
+      
+      questionElement.appendChild(reviewDiv);
+    })
+    .catch((error) => console.error("Error:", error));
+}
+
+function showCorrectAnswers() {
+  showCorrectAnswersFromFile("correctAnswer.json");
+}
+
+
+function showScore() {
+  console.log("Quiz ended"); // Console log messages for end Quiz
+  resetState();
+  showCorrectAnswers();
+  questionElement.innerHTML = `You score ${score} out of ${calculateMaxPossibleScore()}!`; // show score / total score
+  nextButton.innerHTML = "Play Again";
+  nextButton.style.display = "block";
+}
 
 startQuiz();
