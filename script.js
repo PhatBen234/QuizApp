@@ -91,24 +91,20 @@ function selectAnswer(e) {
   console.log("Answer selected");
 
   const selectedCheckbox = e.target;
-  const selectedLabel = selectedCheckbox.nextElementSibling; 
+  const selectedLabel = selectedCheckbox.nextElementSibling;
   const isCorrect = selectedCheckbox.dataset.correct === "true";
   weight = difficultyWeights[currentQuestion.difficulty];
 
-  
   if (selectedCheckbox.checked) {
-    
     if (isCorrect) {
       selectedLabel.classList.add("correct");
     } else {
       selectedLabel.classList.add("incorrect");
     }
   } else {
-    
     selectedLabel.classList.remove("correct", "incorrect");
   }
 
-  
   const checkedCheckboxes = Array.from(
     answerButton.querySelectorAll("input[type='checkbox']:checked")
   );
@@ -116,43 +112,39 @@ function selectAnswer(e) {
 }
 
 function calculateMaxPossibleScore() {
-  // calculate total score
   let maxScore = 0;
   questions.forEach((question) => {
-    maxScore += difficultyWeights[question.difficulty];
+    let correctAnswersCount = question.answers.filter(
+      (answer) => answer.correct
+    ).length;
+    maxScore += correctAnswersCount * difficultyWeights[question.difficulty]; // Multiply by difficulty weight
   });
   return maxScore;
 }
 
 function handleNextButton() {
-  // Initialize a counter for correct answers
-  let correctAnswersCount = 0;
+  // Initialize a variable to store total score for this question
+  let questionScore = 0;
 
   // Check if all checked answers are correct
   const checkedCheckboxes = Array.from(
     answerButton.querySelectorAll("input[type='checkbox']:checked")
   );
 
-  // Check if all checked answers are correct and there are no unchecked checkboxes
-  const allCorrect = checkedCheckboxes.every((checkbox) => {
+  // Calculate score for this question based on checked answers
+  checkedCheckboxes.forEach((checkbox) => {
     if (checkbox.dataset.correct === "true") {
-      correctAnswersCount++;
-      return true;
+      // Add weight to score for each correct answer selected
+      questionScore += weight;
     } else {
-      return false;
+      // Deduct weight from score for each incorrect answer selected
+      questionScore -= weight;
     }
   });
 
-  if (
-    allCorrect &&
-    correctAnswersCount ===
-      currentQuestion.answers.filter((answer) => answer.correct).length
-  ) {
-    // Add weight to score
-    score += weight;
-  }
+  // Add question score to total score
+  score += Math.max(questionScore, 0); // Ensure question score is non-negative
   console.log(score);
-
   // Move to the next question
   currentQuestionIndex++;
 
@@ -181,16 +173,13 @@ function showCorrectAnswersFromFile(file) {
   fetch(file)
     .then((response) => response.json())
     .then((data) => {
-      
       const reviewDiv = document.createElement("div");
       reviewDiv.classList.add("review-container");
 
-      
       const correctAnswersTitle = document.createElement("h2");
       correctAnswersTitle.textContent = "Correct Answers:";
       reviewDiv.appendChild(correctAnswersTitle);
 
-      
       data.forEach((answerObject) => {
         for (const key in answerObject) {
           if (Object.hasOwnProperty.call(answerObject, key)) {
@@ -202,7 +191,6 @@ function showCorrectAnswersFromFile(file) {
         }
       });
 
-      
       questionElement.appendChild(reviewDiv);
     })
     .catch((error) => console.error("Error:", error));
@@ -211,7 +199,6 @@ function showCorrectAnswersFromFile(file) {
 function showCorrectAnswers() {
   showCorrectAnswersFromFile("correctAnswer.json");
 }
-
 
 function showScore() {
   console.log("Quiz ended"); // Console log messages for end Quiz
